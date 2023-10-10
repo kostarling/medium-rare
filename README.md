@@ -1,4 +1,4 @@
-# Medium Rere
+# Medium Rare
 
 Medium Rere is a web application built using Streamlit, designed to display cached copies of website pages from Google's cache. 
 
