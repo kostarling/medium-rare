@@ -1,51 +1,51 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
-from streamlit.logger import get_logger
+import urllib.request
+from bs4 import BeautifulSoup as bs
+import html2text as ht
 
-LOGGER = get_logger(__name__)
+def url2md(medium_url):
+    user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
 
+    headers={'User-Agent':user_agent,} 
+    url="http://webcache.googleusercontent.com/search?q=cache:" + medium_url + "&sca_esv=571285583&strip=1&vwsrc=0"
+    
+    
+    
+    request=urllib.request.Request(url,None,headers)
+    response = urllib.request.urlopen(request)
+        
+    data = response.read()
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+    divs = bs(data).find_all("div", attrs={"class" : "ch bg fw fx fy fz"})
 
-    st.write("# Welcome to Medium Rare! 👋")
+    for d in divs:
+        if 'storyTitle' in str(d): 
+            print(d)
+            storyTitle = d.find("h1", attrs={"data-testid" : "storyTitle"}).get_text()
+            print(storyTitle)
+            p1 = d.find("p", attrs={"class" : ["pw-post-body-paragraph"]})
+            storyBody = [p1] + p1.find_next_siblings()
+            print(p1)
 
-    st.sidebar.success("Select a demo above.")
+    return storyTitle , storyBody, url
 
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
+with st.sidebar:
+    st.title("[Medium rere]")
+    '''**Displays a convenient copy of the page from Google Cache**'''
+    medium_url = st.text_input("Write medium url",
+                               value="https://medium.com/@trumandaniels/creating-a-machine-learning-application-with-streamlit-ecce038eec5a")
+    "Link to a copy of the page in google cache:"
 
+if medium_url:
+    storyTitle , storyBody, gcache_url = url2md(medium_url)
 
-if __name__ == "__main__":
-    run()
+    sBody = ">>>>"
+    for sb in storyBody: 
+        sBody = sBody + str(sb)
+        
+
+    st.title(storyTitle)
+    st.write(ht.html2text(sBody))
+
+    st.sidebar.write(gcache_url)
+
