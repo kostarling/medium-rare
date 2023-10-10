@@ -1,5 +1,3 @@
-altair
-numpy
-pandas
-pydeck
+beautifulsoup4
+html2text
 streamlit
